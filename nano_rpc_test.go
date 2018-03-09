@@ -29,24 +29,20 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccounts(t *testing.T) {
-	t.Run("accounts", func(t *testing.T) {
-		v, err := Accounts(SERVER, wallet)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, acc := range v {
-			t.Log(acc)
-		}
-	})
+	v, err := Accounts(SERVER, wallet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, acc := range v {
+		t.Log(acc)
+	}
 }
 
 func TestBalance(t *testing.T) {
-	t.Run("balance", func(t *testing.T) {
-		accounts, err := Accounts(SERVER, wallet)
-		b, err := Balance(SERVER, accounts[0])
-		if err != nil {
-			t.Fatal(err)
-		}
-		t.Log(b)
-	})
+	accounts, err := Accounts(SERVER, wallet)
+	b, err := Balance(SERVER, accounts[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(b)
 }
