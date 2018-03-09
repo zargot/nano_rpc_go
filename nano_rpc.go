@@ -59,6 +59,9 @@ func request(url string, req interface{}) (res map[string]interface{}, err error
 func Accounts(url string, wallet string) (accounts []string, err error) {
 	req := wallet_rpc{action_rpc{"account_list"}, wallet}
 	res, err := request(url, req)
+	if err != nil {
+		return
+	}
 	v := res["accounts"].([]interface{})
 	accounts = make([]string, len(v))
 	for i, x := range v {
@@ -70,8 +73,9 @@ func Accounts(url string, wallet string) (accounts []string, err error) {
 func Balance(url string, acc string) (balance string, err error) {
 	req := account_rpc{action_rpc{"account_balance"}, acc}
 	res, err := request(url, req)
-	if err == nil {
-		balance = res["balance"].(string)
+	if err != nil {
+		return
 	}
+	balance = res["balance"].(string)
 	return
 }
