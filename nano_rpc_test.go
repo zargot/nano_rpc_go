@@ -2,7 +2,6 @@ package nano_rpc
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -10,29 +9,44 @@ import (
 
 const SERVER = "http://[::1]:7076"
 
-func load_config(t *testing.T) (wallet, acc string) {
-	var err error
-	var b []byte
-	if b, err = ioutil.ReadFile(os.Getenv("HOME") + "/RaiBlocks/config.json"); err != nil {
-		t.Fatal(err)
+var wallet string
+
+func load_config() {
+	b, err := ioutil.ReadFile(os.Getenv("HOME") + "/RaiBlocks/config.json")
+	if err != nil {
+		panic(err)
 	}
 	m := make(map[string]interface{})
 	if err = json.Unmarshal(b, &m); err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
-	if str, ok := m["wallet"].(string); ok {
-		wallet = str
-	}
-	if str, ok := m["account"].(string); ok {
-		acc = str
-	}
-	return
+	wallet = m["wallet"].(string)
+}
+
+func TestMain(m *testing.M) {
+	load_config()
+	os.Exit(m.Run())
+}
+
+func TestAccounts(t *testing.T) {
+	t.Run("accounts", func(t *testing.T) {
+		v, err := Accounts(SERVER, wallet)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, acc := range v {
+			t.Log(acc)
+		}
+	})
 }
 
 func TestBalance(t *testing.T) {
-	_, acc := load_config(t)
 	t.Run("balance", func(t *testing.T) {
-		b := Balance(SERVER, acc)
-		fmt.Println(b)
+		accounts, err := Accounts(SERVER, wallet)
+		b, err := Balance(SERVER, accounts[0])
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(b)
 	})
 }

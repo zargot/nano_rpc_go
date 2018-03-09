@@ -3,47 +3,77 @@ package nano_rpc
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/zargot/algo"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
-type rpc struct {
+type action_rpc struct {
 	Action string
 }
 
-type balance_rpc struct {
-	rpc
+type account_rpc struct {
+	action_rpc
 	Account string
 }
 
-const CTYPE = "application/json"
+type wallet_rpc struct {
+	action_rpc
+	Wallet string
+}
 
-func Balance(url string, acc string) string {
-	var err error
+func marshal(x interface{}) string {
+	buf, err := json.Marshal(x)
+	if err != nil {
+		panic(err)
+	}
+	return strings.ToLower(string(buf))
+}
 
-	var response *http.Response
-	var reqdata []byte
-	req := balance_rpc{rpc{"account_balance"}, acc}
-	if reqdata, err = json.Marshal(req); err != nil {
+func unmarshal(buf []byte) map[string]interface{} {
+	res := make(map[string]interface{})
+	if err := json.Unmarshal(buf, &res); err != nil {
 		panic(err)
 	}
-	reqdata = algo.Transform(reqdata, algo.ToLower)
-	reqstream := bytes.NewReader(reqdata)
-	if response, err = http.Post(url, CTYPE, reqstream); err != nil {
+	return res
+}
+
+func request(url string, req interface{}) (res map[string]interface{}, err error) {
+	reqstr := marshal(req)
+
+	buf := bytes.NewBufferString(reqstr)
+	response, err := http.Post(url, "application/json", buf)
+	if err != nil {
+		return
+	}
+	resdata, err := ioutil.ReadAll(response.Body)
+	if err != nil {
 		panic(err)
 	}
 
-	var resdata []byte
-	res := make(map[string]string)
-	if resdata, err = ioutil.ReadAll(response.Body); err != nil {
-		panic(err)
+	res = unmarshal(resdata)
+	if val, ok := res["error"]; ok {
+		panic(val)
 	}
-	if err = json.Unmarshal(resdata, &res); err != nil {
-		panic(err)
+	return
+}
+
+func Accounts(url string, wallet string) (accounts []string, err error) {
+	req := wallet_rpc{action_rpc{"account_list"}, wallet}
+	res, err := request(url, req)
+	v := res["accounts"].([]interface{})
+	accounts = make([]string, len(v))
+	for i, x := range v {
+		accounts[i] = x.(string)
 	}
-	if err, ok := res["error"]; ok {
-		panic(err)
+	return
+}
+
+func Balance(url string, acc string) (balance string, err error) {
+	req := account_rpc{action_rpc{"account_balance"}, acc}
+	res, err := request(url, req)
+	if err == nil {
+		balance = res["balance"].(string)
 	}
-	return res["balance"]
+	return
 }
