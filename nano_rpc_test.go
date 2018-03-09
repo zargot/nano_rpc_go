@@ -11,7 +11,7 @@ const SERVER = "http://[::1]:7076"
 
 var wallet string
 
-func load_config() {
+func loadConfig() {
 	b, err := ioutil.ReadFile(os.Getenv("HOME") + "/RaiBlocks/config.json")
 	if err != nil {
 		panic(err)
@@ -24,7 +24,7 @@ func load_config() {
 }
 
 func TestMain(m *testing.M) {
-	load_config()
+	loadConfig()
 	os.Exit(m.Run())
 }
 

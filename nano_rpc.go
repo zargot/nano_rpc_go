@@ -7,17 +7,17 @@ import (
 	"net/http"
 )
 
-type action_rpc struct {
+type actionRPC struct {
 	Action string `json:"action"`
 }
 
-type account_rpc struct {
-	action_rpc
+type accountRPC struct {
+	actionRPC
 	Account string `json:"account"`
 }
 
-type wallet_rpc struct {
-	action_rpc
+type walletRPC struct {
+	actionRPC
 	Wallet string `json:"wallet"`
 }
 
@@ -57,7 +57,7 @@ func request(url string, req interface{}) (res map[string]interface{}, err error
 }
 
 func Accounts(url string, wallet string) (accounts []string, err error) {
-	req := wallet_rpc{action_rpc{"account_list"}, wallet}
+	req := walletRPC{actionRPC{"account_list"}, wallet}
 	res, err := request(url, req)
 	if err != nil {
 		return
@@ -71,7 +71,7 @@ func Accounts(url string, wallet string) (accounts []string, err error) {
 }
 
 func Balance(url string, acc string) (balance string, err error) {
-	req := account_rpc{action_rpc{"account_balance"}, acc}
+	req := accountRPC{actionRPC{"account_balance"}, acc}
 	res, err := request(url, req)
 	if err != nil {
 		return
