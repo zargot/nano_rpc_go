@@ -5,29 +5,28 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
 type action_rpc struct {
-	Action string
+	Action string `json:"action"`
 }
 
 type account_rpc struct {
 	action_rpc
-	Account string
+	Account string `json:"account"`
 }
 
 type wallet_rpc struct {
 	action_rpc
-	Wallet string
+	Wallet string `json:"wallet"`
 }
 
-func marshal(x interface{}) string {
+func marshal(x interface{}) []byte {
 	buf, err := json.Marshal(x)
 	if err != nil {
 		panic(err)
 	}
-	return strings.ToLower(string(buf))
+	return buf
 }
 
 func unmarshal(buf []byte) map[string]interface{} {
@@ -39,10 +38,9 @@ func unmarshal(buf []byte) map[string]interface{} {
 }
 
 func request(url string, req interface{}) (res map[string]interface{}, err error) {
-	reqstr := marshal(req)
+	reqdata := marshal(req)
 
-	buf := bytes.NewBufferString(reqstr)
-	response, err := http.Post(url, "application/json", buf)
+	response, err := http.Post(url, "application/json", bytes.NewReader(reqdata))
 	if err != nil {
 		return
 	}
@@ -53,7 +51,7 @@ func request(url string, req interface{}) (res map[string]interface{}, err error
 
 	res = unmarshal(resdata)
 	if val, ok := res["error"]; ok {
-		panic(val)
+		panic(val.(string) + ": " + string(reqdata))
 	}
 	return
 }
