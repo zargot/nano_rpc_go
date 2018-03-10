@@ -40,9 +40,9 @@ func TestAccounts(t *testing.T) {
 
 func TestBalance(t *testing.T) {
 	accounts, err := Accounts(SERVER, wallet)
-	b, err := Balance(SERVER, accounts[0])
+	b, p, err := Balance(SERVER, accounts[0])
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(b)
+	t.Logf("balance: %d, pending: %d", b, p)
 }

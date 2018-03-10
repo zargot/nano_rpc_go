@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"math/big"
 	"net/http"
 )
 
@@ -56,6 +57,20 @@ func request(url string, req interface{}) (res map[string]interface{}, err error
 	return
 }
 
+func rawtonano(rawstr string) uint64 {
+	var raw, rawtonano, nano = new(big.Int), new(big.Int), new(big.Int)
+	raw, ok := new(big.Int).SetString(rawstr, 10)
+	if !ok {
+		panic("invalid balance")
+	}
+	rawtonano.Exp(big.NewInt(10), big.NewInt(24), nil)
+	nano.Div(raw, rawtonano)
+	if nano.BitLen() > 64 {
+		return 9999999999999999999
+	}
+	return nano.Uint64()
+}
+
 func Accounts(url string, wallet string) (accounts []string, err error) {
 	req := walletRPC{actionRPC{"account_list"}, wallet}
 	res, err := request(url, req)
@@ -70,12 +85,13 @@ func Accounts(url string, wallet string) (accounts []string, err error) {
 	return
 }
 
-func Balance(url string, acc string) (balance string, err error) {
+func Balance(url string, acc string) (balance uint64, pending uint64, err error) {
 	req := accountRPC{actionRPC{"account_balance"}, acc}
 	res, err := request(url, req)
 	if err != nil {
 		return
 	}
-	balance = res["balance"].(string)
+	balance = rawtonano(res["balance"].(string))
+	pending = rawtonano(res["pending"].(string))
 	return
 }
