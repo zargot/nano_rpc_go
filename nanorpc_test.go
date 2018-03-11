@@ -1,4 +1,4 @@
-package nano_rpc
+package nanorpc
 
 import (
 	"encoding/json"
