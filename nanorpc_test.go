@@ -62,7 +62,7 @@ func TestBalance(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("account balance:")
-	t.Logf("%d (%d)", b, p)
+	t.Logf("%s (%s)", b, p)
 }
 
 func TestBlockInfo(t *testing.T) {

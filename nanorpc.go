@@ -81,7 +81,7 @@ func request(url string, req interface{}) (resdata []byte, res map[string]interf
 	return
 }
 
-func rawtonano(rawstr string) uint64 {
+func NanoUint64(rawstr string) uint64 {
 	var raw, rawtonano, nano = new(big.Int), new(big.Int), new(big.Int)
 	raw, ok := new(big.Int).SetString(rawstr, 10)
 	if !ok {
@@ -119,14 +119,14 @@ func AccountInfo(url string, acc string) (info Account, err error) {
 	return
 }
 
-func Balance(url string, acc string) (balance uint64, pending uint64, err error) {
+func Balance(url string, acc string) (balance string, pending string, err error) {
 	req := accountRPC{actionRPC{"account_balance"}, acc}
 	_, res, err := request(url, req)
 	if err != nil {
 		return
 	}
-	balance = rawtonano(res["balance"].(string))
-	pending = rawtonano(res["pending"].(string))
+	balance = res["balance"].(string)
+	pending = res["pending"].(string)
 	return
 }
 
