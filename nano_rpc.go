@@ -3,10 +3,29 @@ package nano_rpc
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"math/big"
 	"net/http"
 )
+
+type Account struct {
+	Frontier            string `json:"frontier"`
+	OpenBlock           string `json:"open_block"`
+	RepresentativeBlock string `json:"representative_block"`
+	Balance             string `json:"balance"`
+	ModifiedTimestamp   string `json:"modified_timestamp"`
+	BlockCount          string `json:"block_count"`
+}
+
+type Block struct {
+	Type        string
+	Previous    string
+	Destination string
+	Balance     string
+	Work        string
+	Signature   string
+}
 
 type actionRPC struct {
 	Action string `json:"action"`
@@ -15,6 +34,11 @@ type actionRPC struct {
 type accountRPC struct {
 	actionRPC
 	Account string `json:"account"`
+}
+
+type blockRPC struct {
+	actionRPC
+	Hash string `json:"hash"`
 }
 
 type walletRPC struct {
@@ -38,14 +62,14 @@ func unmarshal(buf []byte) map[string]interface{} {
 	return res
 }
 
-func request(url string, req interface{}) (res map[string]interface{}, err error) {
+func request(url string, req interface{}) (resdata []byte, res map[string]interface{}, err error) {
 	reqdata := marshal(req)
 
 	response, err := http.Post(url, "application/json", bytes.NewReader(reqdata))
 	if err != nil {
 		return
 	}
-	resdata, err := ioutil.ReadAll(response.Body)
+	resdata, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -73,7 +97,7 @@ func rawtonano(rawstr string) uint64 {
 
 func Accounts(url string, wallet string) (accounts []string, err error) {
 	req := walletRPC{actionRPC{"account_list"}, wallet}
-	res, err := request(url, req)
+	_, res, err := request(url, req)
 	if err != nil {
 		return
 	}
@@ -85,13 +109,43 @@ func Accounts(url string, wallet string) (accounts []string, err error) {
 	return
 }
 
+func AccountInfo(url string, acc string) (info Account, err error) {
+	req := accountRPC{actionRPC{"account_info"}, acc}
+	resdata, _, err := request(url, req)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(resdata, &info)
+	return
+}
+
 func Balance(url string, acc string) (balance uint64, pending uint64, err error) {
 	req := accountRPC{actionRPC{"account_balance"}, acc}
-	res, err := request(url, req)
+	_, res, err := request(url, req)
 	if err != nil {
 		return
 	}
 	balance = rawtonano(res["balance"].(string))
 	pending = rawtonano(res["pending"].(string))
+	return
+}
+
+func BlockInfo(url string, hash string) (block Block, err error) {
+	req := blockRPC{actionRPC{"block"}, hash}
+	_, res, err := request(url, req)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal([]byte(res["contents"].(string)), &block)
+	if err != nil {
+		return
+	}
+
+	i, ok := new(big.Int).SetString(block.Balance, 16)
+	if !ok {
+		err = fmt.Errorf("internal error")
+		return
+	}
+	block.Balance = i.Text(10)
 	return
 }

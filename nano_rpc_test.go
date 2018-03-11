@@ -33,16 +33,51 @@ func TestAccounts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Log("accounts:")
 	for _, acc := range v {
 		t.Log(acc)
 	}
 }
 
+func TestAccountInfo(t *testing.T) {
+	accounts, err := Accounts(SERVER, wallet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := AccountInfo(SERVER, accounts[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("account info:")
+	t.Logf("%+v", a)
+}
+
 func TestBalance(t *testing.T) {
 	accounts, err := Accounts(SERVER, wallet)
+	if err != nil {
+		t.Fatal(err)
+	}
 	b, p, err := Balance(SERVER, accounts[0])
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("balance: %d, pending: %d", b, p)
+	t.Logf("account balance:")
+	t.Logf("%d (%d)", b, p)
+}
+
+func TestBlockInfo(t *testing.T) {
+	accounts, err := Accounts(SERVER, wallet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := AccountInfo(SERVER, accounts[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := BlockInfo(SERVER, a.Frontier)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("block info:")
+	t.Logf("%+v", b)
 }
