@@ -65,7 +65,7 @@ func TestBalance(t *testing.T) {
 	t.Logf("%s (%s)", b, p)
 }
 
-func TestBlockInfo(t *testing.T) {
+func getBlockHash(t *testing.T) string {
 	accounts, err := Accounts(SERVER, wallet)
 	if err != nil {
 		t.Fatal(err)
@@ -74,7 +74,20 @@ func TestBlockInfo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := BlockInfo(SERVER, a.Frontier)
+	return a.Frontier
+}
+
+func TestBlockAccount(t *testing.T) {
+	acc, err := BlockAccount(SERVER, getBlockHash(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("block account:")
+	t.Logf(acc)
+}
+
+func TestBlockInfo(t *testing.T) {
+	b, err := BlockInfo(SERVER, getBlockHash(t))
 	if err != nil {
 		t.Fatal(err)
 	}

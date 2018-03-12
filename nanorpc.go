@@ -130,6 +130,16 @@ func Balance(url string, acc string) (balance string, pending string, err error)
 	return
 }
 
+func BlockAccount(url string, hash string) (acc string, err error) {
+	req := blockRPC{actionRPC{"block_account"}, hash}
+	_, res, err := request(url, req)
+	if err != nil {
+		return
+	}
+	acc = res["account"].(string)
+	return
+}
+
 func BlockInfo(url string, hash string) (block Block, err error) {
 	req := blockRPC{actionRPC{"block"}, hash}
 	_, res, err := request(url, req)
