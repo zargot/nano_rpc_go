@@ -70,7 +70,9 @@ func unmarshal(buf []byte) map[string]interface{} {
 	return res
 }
 
-func request(url string, req interface{}) (resdata []byte, res map[string]interface{}, err error) {
+func request(url string, req interface{}) (
+	resdata []byte, res map[string]interface{}, err error,
+) {
 	reqdata := marshal(req)
 
 	response, err := http.Post(url, "application/json", bytes.NewReader(reqdata))
