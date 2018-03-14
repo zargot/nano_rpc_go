@@ -94,3 +94,24 @@ func TestBlockInfo(t *testing.T) {
 	t.Logf("block info:")
 	t.Logf("%+v", b)
 }
+
+func TestSend(t *testing.T) {
+	accounts, err := Accounts(SERVER, wallet)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	src, dst, amount := accounts[0], accounts[1], "1"
+	hash, err := Send(SERVER, wallet, src, dst, amount)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	block, err := BlockInfo(SERVER, hash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if block.Type != "send" || block.Destination != dst {
+		t.Fatal("invalid block/hash")
+	}
+}

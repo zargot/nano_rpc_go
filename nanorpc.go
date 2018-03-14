@@ -41,6 +41,14 @@ type blockRPC struct {
 	Hash string `json:"hash"`
 }
 
+type sendRPC struct {
+	actionRPC
+	Wallet      string `json:"wallet"`
+	Source      string `json:"source"`
+	Destination string `json:"destination"`
+	Amount      string `json:"amount"`
+}
+
 type walletRPC struct {
 	actionRPC
 	Wallet string `json:"wallet"`
@@ -157,5 +165,17 @@ func BlockInfo(url string, hash string) (block Block, err error) {
 		return
 	}
 	block.Balance = i.Text(10)
+	return
+}
+
+func Send(url string, wallet string, src string, dst string, amount string) (
+	hash string, err error,
+) {
+	req := sendRPC{actionRPC{"send"}, wallet, src, dst, amount}
+	_, res, err := request(url, req)
+	if err != nil {
+		return
+	}
+	hash = res["block"].(string)
 	return
 }
