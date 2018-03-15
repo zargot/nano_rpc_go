@@ -119,7 +119,7 @@ func Accounts(url string, wallet string) (accounts []string, err error) {
 	return
 }
 
-func AccountInfo(url string, acc string) (info Account, err error) {
+func AccountInfo(url, acc string) (info Account, err error) {
 	req := accountRPC{actionRPC{"account_info"}, acc}
 	resdata, _, err := request(url, req)
 	if err != nil {
@@ -129,7 +129,7 @@ func AccountInfo(url string, acc string) (info Account, err error) {
 	return
 }
 
-func Balance(url string, acc string) (balance string, pending string, err error) {
+func Balance(url, acc string) (balance string, pending string, err error) {
 	req := accountRPC{actionRPC{"account_balance"}, acc}
 	_, res, err := request(url, req)
 	if err != nil {
@@ -140,7 +140,7 @@ func Balance(url string, acc string) (balance string, pending string, err error)
 	return
 }
 
-func BlockAccount(url string, hash string) (acc string, err error) {
+func BlockAccount(url, hash string) (acc string, err error) {
 	req := blockRPC{actionRPC{"block_account"}, hash}
 	_, res, err := request(url, req)
 	if err != nil {
@@ -150,7 +150,11 @@ func BlockAccount(url string, hash string) (acc string, err error) {
 	return
 }
 
-func BlockInfo(url string, hash string) (block Block, err error) {
+func BlockInfo(url, hash string) (block Block, err error) {
+	if len(hash) != 64 {
+		err = fmt.Errorf("invalid hash")
+		return
+	}
 	req := blockRPC{actionRPC{"block"}, hash}
 	_, res, err := request(url, req)
 	if err != nil {
@@ -170,9 +174,7 @@ func BlockInfo(url string, hash string) (block Block, err error) {
 	return
 }
 
-func Send(url string, wallet string, src string, dst string, amount string) (
-	hash string, err error,
-) {
+func Send(url, wallet, src, dst, amount string) (hash string, err error) {
 	req := sendRPC{actionRPC{"send"}, wallet, src, dst, amount}
 	_, res, err := request(url, req)
 	if err != nil {
